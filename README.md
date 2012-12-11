@@ -12,7 +12,7 @@ function myExpensiveComputation(arg1, arg2, cb) {
 var memoized = memoizeAsync(myExpensiveComputation);
 ```
 
-Now `memoized` works exactly like myExpensiveComputation, except that
+Now `memoized` works exactly like `myExpensiveComputation`, except that
 the actual computation is only performed once for each unique set of
 arguments (apart from the callback):
 
