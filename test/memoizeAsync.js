@@ -58,12 +58,12 @@ describe('memoizeAsync', function () {
             this.nextNumber = 1;
         }
 
-        Counter.prototype.getNextNumber = function (cb) {
+        Counter.prototype.getNextNumber = memoizeAsync(function (cb) {
             var that = this;
             process.nextTick(function () {
                 cb(null, that.nextNumber++);
             });
-        };
+        });
 
         var counter = new Counter();
 
@@ -71,8 +71,8 @@ describe('memoizeAsync', function () {
             expect(nextNumber).to.equal(1);
             expect(counter.nextNumber).to.equal(2);
             counter.getNextNumber(function (err, nextNextNumber) {
-                expect(nextNextNumber).to.equal(2);
-                expect(counter.nextNumber).to.equal(3);
+                expect(nextNextNumber).to.equal(1);
+                expect(counter.nextNumber).to.equal(2);
                 done();
             });
         });
