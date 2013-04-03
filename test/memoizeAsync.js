@@ -138,4 +138,26 @@ describe('memoizeAsync', function () {
             });
         });
     });
+
+    it('with a ttl should recompute the value after the ttl has expired', function (done) {
+        var nextNumber = 1,
+            memoizedGetNextNumber = memoizeAsync(function getNextNumber(cb) {
+                process.nextTick(function () {
+                    cb(null, nextNumber++);
+                });
+            }, {ttl: 10});
+
+        memoizedGetNextNumber(function (err, nextNumber) {
+            expect(nextNumber).to.equal(1);
+            memoizedGetNextNumber(function (err, nextNumber) {
+                expect(nextNumber).to.equal(1);
+                setTimeout(function () {
+                    memoizedGetNextNumber(function (err, nextNumber) {
+                        expect(nextNumber).to.equal(2);
+                        done();
+                    });
+                }, 15);
+            });
+        });
+    });
 });

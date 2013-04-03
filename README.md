@@ -75,6 +75,37 @@ Check out <a
 href="https://github.com/papandreou/node-memoizeasync/blob/master/test/memoizeAsync.js">the
 custom argumentsStringifier test</a> for another example.
 
+### Purging and expiring memoized values ###
+
+You can forcefully clear a specific memoized value using the `purge`
+method on the memoizer:
+
+```javascript
+var memoized = memoizeAsync(function functionToMemoize(foo, cb) {
+    // ...
+    cb(null, theResult);
+});
+memoized(123, function (err, value) {
+    memoized.purge(123);
+});
+```
+
+`memoizer.purgeAll()` clears all memoized results.
+
+You can also specify a custom ttl (in milliseconds) on the memoized
+results:
+
+```javascript
+var memoized = memoizeAsync(function functionToMemoize(cb) {
+    // ...
+    cb(null, theResult);
+}, {ttl: 1000});
+```
+
+In the above example the memoized value will be considered stale one
+second after it has been computed, and it will be recomputed next time
+`memoizeAsync` is invoked with the same arguments.
+
 
 Installation
 ------------
