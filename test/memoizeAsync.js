@@ -121,8 +121,10 @@ describe('memoizeAsync', function () {
                 process.nextTick(function () {
                     cb(null, nextNumber++);
                 });
-            }, function (args) {
-                return args.map(toCanonicalJson).join('\x1d');
+            }, {
+                argumentsStringifier: function (args) {
+                    return args.map(toCanonicalJson).join('\x1d');
+                }
             });
 
         memoizedGetNextNumber({foo: 'bar', quux: 'baz'}, function (err, nextNumber) {

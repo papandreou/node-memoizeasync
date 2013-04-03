@@ -46,17 +46,19 @@ To distinguish different invocations (whose results need to be cached
 separately) `memoizeAsync` relies on a naive stringification of the
 arguments, which is looked up in an internally kept hash. If the
 function you're memoizing takes non-primitive arguments you might want
-to provide a custom `argumentsStringifier` as the second argument to
-`memoizeAsync`. Otherwise all object arguments will be considered equal
-because they stringify to `[object Object]`:
+to provide a custom `argumentsStringifier` as a option in the second
+argument to `memoizeAsync`. Otherwise all object arguments will be
+considered equal because they stringify to `[object Object]`:
 
 ```javascript
 var memoized = memoizeAsync(function functionToMemoize(obj, cb) {
     // ...
     cb(null, Object.keys(obj).join(''));
-}, function argumentStringifier(args) {
-   return args.map(function (arg) {return JSON.stringify(arg);}).join(",");
-});
+}, {
+    argumentsStringifier: function (args) {
+       return args.map(function (arg) {return JSON.stringify(arg);}).join(",");
+    }
+);
 
 memoized({foo: 'bar'}, function (err, result) {
     // result === 'foo'
