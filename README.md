@@ -4,6 +4,8 @@ node-memoizeasync
 Yet another memoizer for asynchronous functions.
 
 ```javascript
+var memoizeAsync = require('memoizeasync');
+
 function myExpensiveComputation(arg1, arg2, cb) {
    // ...
    cb(null, result);
@@ -146,6 +148,28 @@ Installation
 Make sure you have node.js and npm installed, then run:
 
     npm install memoizeasync
+
+Browser compatibility
+---------------------
+
+`memoizeAsync` uses the UMD wrapper, so it should also work in
+browsers. You should also have the <a
+href="https://github.com/isaacs/node-lru-cache">node-lru-cache</a>
+included:
+
+```html
+<script src="lru-cache.js"></script>
+<script src="memoizeAsync.js"></script>
+<script>
+    var memoizedFunction = memoizeAsync(function (cb) {
+        // ...
+    });
+</script>
+```
+
+`lru-cache` uses `Object.defineProperty` and doesn't include an UMD
+wrapper, but if you define a `shims` config it should be possible to
+get it memoizeAsync working with require.js, at least in newer browsers.
 
 License
 -------
