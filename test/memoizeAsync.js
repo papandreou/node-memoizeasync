@@ -139,13 +139,13 @@ describe('memoizeAsync', function () {
         });
     });
 
-    it('with a ttl should recompute the value after the ttl has expired', function (done) {
+    it('with a maxAge should recompute the value after an item has become stale', function (done) {
         var nextNumber = 1,
             memoizedGetNextNumber = memoizeAsync(function getNextNumber(cb) {
                 process.nextTick(function () {
                     cb(null, nextNumber++);
                 });
-            }, {ttl: 10});
+            }, {maxAge: 10});
 
         memoizedGetNextNumber(function (err, nextNumber) {
             expect(nextNumber).to.equal(1);
@@ -157,6 +157,63 @@ describe('memoizeAsync', function () {
                         done();
                     });
                 }, 15);
+            });
+        });
+    });
+
+    it('with a max limit should purge the least recently used result', function (done) {
+        var nextNumber = 1,
+            memoizedGetNextNumberPlusOtherNumber = memoizeAsync(function getNextNumber(otherNumber, cb) {
+                process.nextTick(function () {
+                    cb(null, otherNumber + (nextNumber++));
+                });
+            }, {max: 2});
+
+        memoizedGetNextNumberPlusOtherNumber(1, function (err, nextNumberPlusOne) {
+            expect(nextNumberPlusOne).to.equal(2);
+            memoizedGetNextNumberPlusOtherNumber(2, function (err, nextNumberPlusTwo) {
+                expect(nextNumberPlusTwo).to.equal(4);
+                memoizedGetNextNumberPlusOtherNumber(1, function (err, nextNumberPlusOneAgain) {
+                    expect(nextNumberPlusOne).to.equal(2);
+                    // This will purge memoizedGetNextNumberPlusOtherNumber(2, ...):
+                    memoizedGetNextNumberPlusOtherNumber(3, function (err, nextNumberPlusThree) {
+                        expect(nextNumberPlusThree).to.equal(6);
+                        memoizedGetNextNumberPlusOtherNumber(2, function (err, nextNumberPlusTwoAgain) {
+                            expect(nextNumberPlusTwoAgain).to.equal(6);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    it('with a length function should call the length function with the result callback parameters as regular arguments', function (done) {
+        var shouldErrorNextTime = false,
+            functionThatErrorsEverySecondTime = function (number, cb) {
+                process.nextTick(function () {
+                    if (shouldErrorNextTime) {
+                        cb(new Error());
+                    } else {
+                        cb(null, 'the result');
+                    }
+                    shouldErrorNextTime = !shouldErrorNextTime;
+                });
+            },
+            memoizedFunctionThatErrorsEverySecondTime = memoizeAsync(functionThatErrorsEverySecondTime, {
+                length: function (err, result) {
+                    return err ? 1 : result.length;
+                }
+            });
+        memoizedFunctionThatErrorsEverySecondTime(1, function (err, result) {
+            expect(err).to.not.be.ok();
+            expect(result).to.equal('the result');
+            expect(memoizedFunctionThatErrorsEverySecondTime.cache.length).to.equal(10);
+            memoizedFunctionThatErrorsEverySecondTime(2, function (err2, result2) {
+                expect(err2).to.be.an(Error);
+                expect(result2).to.equal(undefined);
+                expect(memoizedFunctionThatErrorsEverySecondTime.cache.length).to.equal(11);
+                done();
             });
         });
     });

@@ -100,13 +100,45 @@ results:
 var memoized = memoizeAsync(function functionToMemoize(cb) {
     // ...
     cb(null, theResult);
-}, {ttl: 1000});
+}, {maxAge: 1000});
 ```
 
 In the above example the memoized value will be considered stale one
 second after it has been computed, and it will be recomputed next time
 `memoizeAsync` is invoked with the same arguments.
 
+`memoizeAsync` uses <a
+href="https://github.com/isaacs/node-lru-cache">node-lru-cache</a> to
+store the memoized values, and it accepts the same parameters in the
+`options` object. If provided, the `length` function will be wrapped
+so it's called with the same arguments as the callback to the memoized
+function:
+
+```javascript
+var fs = require('fs'),
+    memoizedFsReadFile = memoizeAsync(fs.readFile, {
+        max: 1000000,
+        length: function (err, body) {
+            return body.length;
+        },
+        maxAge: 1000
+    });
+```
+
+The LRU instance is exposed in the `cache` property of the memoized
+function in case you need to access it. Note that the values stored in
+the cache are arrays of parameters provided to the callback by the
+memoized function. In most cases that will be `[err, result]`:
+
+
+```javascript
+var numMemoizedErrors = 0;
+memoized.cache.values().forEach(function (resultCallbackParams) {
+    if (resultCallbackParams[0]) {
+        numMemoizedErrors += 1;
+    }
+});
+```
 
 Installation
 ------------
