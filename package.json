@@ -1,32 +1,32 @@
 {
-    "name": "memoizeasync",
-    "version": "0.3.1",
-    "description": "Helper for memoizing async functions and methods",
-    "main": "lib/memoizeAsync.js",
-    "directories": {
-        "test": "test"
-    },
-    "dependencies": {
-        "lru-cache": "=2.3.1"
-    },
-    "devDependencies": {
-        "mocha": "=1.7.3",
-        "expect.js": "=0.2.0"
-    },
-    "scripts": {
-        "prepublish": "mocha",
-        "test": "mocha"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/papandreou/node-memoizeasync.git"
-    },
-    "keywords": [
-        "memo",
-        "memoize",
-        "async",
-        "cache"
-    ],
-    "author": "Andreas Lind Petersen <andreas@one.com>",
-    "license": "BSD"
+  "name": "memoizeasync",
+  "version": "0.3.1",
+  "description": "Helper for memoizing async functions and methods",
+  "main": "lib/memoizeAsync.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "lru-cache": "=2.3.1"
+  },
+  "devDependencies": {
+    "mocha": "=1.7.3",
+    "expect.js": "=0.2.0"
+  },
+  "scripts": {
+    "prepublish": "mocha",
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/papandreou/node-memoizeasync.git"
+  },
+  "keywords": [
+    "memo",
+    "memoize",
+    "async",
+    "cache"
+  ],
+  "author": "Andreas Lind Petersen <andreas@one.com>",
+  "license": "BSD"
 }
