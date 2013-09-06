@@ -29,6 +29,7 @@ describe('memoizeAsync', function () {
 
         memoizedSumOfOperandsPlusNextNumber(10, 10, function (err, sumPlusNextNumber) {
             expect(sumPlusNextNumber).to.equal(21);
+            expect(memoizedSumOfOperandsPlusNextNumber.peek(10, 10)[1]).to.equal(21);
             memoizedSumOfOperandsPlusNextNumber(10, 10, function (err, sumPlusNextNextNumber) {
                 expect(sumPlusNextNextNumber).to.equal(21);
                 memoizedSumOfOperandsPlusNextNumber(10, 20, function (err, sumPlusNextNextNextNumber) {
