@@ -218,4 +218,22 @@ describe('memoizeAsync', function () {
             });
         });
     });
+
+    it('should leave unrelated values in the cache when purgeAll is called', function (done) {
+        var memoizedAsyncSum = memoizeAsync(function asyncSum(a, b, cb) {
+            process.nextTick(function () {
+                cb(null, a + b);
+            });
+        });
+        var cache = memoizedAsyncSum.cache;
+        memoizedAsyncSum(1, 2, function () {
+            expect(cache.keys().length).to.equal(1);
+            cache.set('foo', 'bar');
+            expect(cache.keys().length).to.equal(2);
+            memoizedAsyncSum.purgeAll();
+            expect(cache.keys().length).to.equal(1);
+            expect(cache.get('foo')).to.equal('bar');
+            done();
+        });
+    });
 });
