@@ -1,6 +1,6 @@
 var memoizeAsync = require('../lib/memoizeAsync'),
     LRUCache = require('lru-cache'),
-    expect = require('expect.js'),
+    expect = require('unexpected'),
     passError = require('passerror');
 
 describe('memoizeAsync', function () {
@@ -13,9 +13,9 @@ describe('memoizeAsync', function () {
             });
 
         memoizedGetNextNumber(function (err, nextNumber) {
-            expect(nextNumber).to.equal(1);
+            expect(nextNumber, 'to equal', 1);
             memoizedGetNextNumber(function (err, nextNextNumber) {
-                expect(nextNextNumber).to.equal(1);
+                expect(nextNextNumber, 'to equal', 1);
                 done();
             });
         });
@@ -30,22 +30,22 @@ describe('memoizeAsync', function () {
             });
 
         memoizedSumOfOperandsPlusNextNumber(10, 10, function (err, sumPlusNextNumber) {
-            expect(sumPlusNextNumber).to.equal(21);
-            expect(memoizedSumOfOperandsPlusNextNumber.peek(10, 10)[1]).to.equal(21);
+            expect(sumPlusNextNumber, 'to equal', 21);
+            expect(memoizedSumOfOperandsPlusNextNumber.peek(10, 10)[1], 'to equal', 21);
             memoizedSumOfOperandsPlusNextNumber(10, 10, function (err, sumPlusNextNextNumber) {
-                expect(sumPlusNextNextNumber).to.equal(21);
+                expect(sumPlusNextNextNumber, 'to equal', 21);
                 memoizedSumOfOperandsPlusNextNumber(10, 20, function (err, sumPlusNextNextNextNumber) {
-                    expect(sumPlusNextNextNextNumber).to.equal(32);
+                    expect(sumPlusNextNextNextNumber, 'to equal', 32);
                     memoizedSumOfOperandsPlusNextNumber.purge(10, 20);
                     memoizedSumOfOperandsPlusNextNumber(10, 20, function (err, number) {
-                        expect(number).to.equal(33);
+                        expect(number, 'to equal', 33);
                         memoizedSumOfOperandsPlusNextNumber(10, 10, function (err, number) {
-                            expect(number).to.equal(21);
+                            expect(number, 'to equal', 21);
                             memoizedSumOfOperandsPlusNextNumber.purgeAll();
                             memoizedSumOfOperandsPlusNextNumber(10, 20, function (err, number) {
-                                expect(number).to.equal(34);
+                                expect(number, 'to equal', 34);
                                 memoizedSumOfOperandsPlusNextNumber(10, 10, function (err, number) {
-                                    expect(number).to.equal(25);
+                                    expect(number, 'to equal', 25);
                                     done();
                                 });
                             });
@@ -71,11 +71,11 @@ describe('memoizeAsync', function () {
         var counter = new Counter();
 
         counter.getNextNumber(function (err, nextNumber) {
-            expect(nextNumber).to.equal(1);
-            expect(counter.nextNumber).to.equal(2);
+            expect(nextNumber, 'to equal', 1);
+            expect(counter.nextNumber, 'to equal', 2);
             counter.getNextNumber(function (err, nextNextNumber) {
-                expect(nextNextNumber).to.equal(1);
-                expect(counter.nextNumber).to.equal(2);
+                expect(nextNextNumber, 'to equal', 1);
+                expect(counter.nextNumber, 'to equal', 2);
                 done();
             });
         });
@@ -93,8 +93,8 @@ describe('memoizeAsync', function () {
         function receiveResultAndProceedIfReady(err, number) {
             results.push(number);
             if (results.length === 2) {
-                expect(results[0]).to.equal(1);
-                expect(results[1]).to.equal(1);
+                expect(results[0], 'to equal', 1);
+                expect(results[1], 'to equal', 1);
                 done();
             }
         }
@@ -131,11 +131,11 @@ describe('memoizeAsync', function () {
             });
 
         memoizedGetNextNumber({foo: 'bar', quux: 'baz'}, function (err, nextNumber) {
-            expect(nextNumber).to.equal(1);
+            expect(nextNumber, 'to equal', 1);
             memoizedGetNextNumber({quux: 'baz', foo: 'bar'}, function (err, nextNumber) {
-                expect(nextNumber).to.equal(1);
+                expect(nextNumber, 'to equal', 1);
                 memoizedGetNextNumber({barf: 'baz'}, function (err, nextNumber) {
-                    expect(nextNumber).to.equal(2);
+                    expect(nextNumber, 'to equal', 2);
                     done();
                 });
             });
@@ -151,12 +151,12 @@ describe('memoizeAsync', function () {
             }, {maxAge: 10});
 
         memoizedGetNextNumber(function (err, nextNumber) {
-            expect(nextNumber).to.equal(1);
+            expect(nextNumber, 'to equal', 1);
             memoizedGetNextNumber(function (err, nextNumber) {
-                expect(nextNumber).to.equal(1);
+                expect(nextNumber, 'to equal', 1);
                 setTimeout(function () {
                     memoizedGetNextNumber(function (err, nextNumber) {
-                        expect(nextNumber).to.equal(2);
+                        expect(nextNumber, 'to equal', 2);
                         done();
                     });
                 }, 15);
@@ -173,16 +173,16 @@ describe('memoizeAsync', function () {
             }, {max: 2});
 
         memoizedGetNextNumberPlusOtherNumber(1, function (err, nextNumberPlusOne) {
-            expect(nextNumberPlusOne).to.equal(2);
+            expect(nextNumberPlusOne, 'to equal', 2);
             memoizedGetNextNumberPlusOtherNumber(2, function (err, nextNumberPlusTwo) {
-                expect(nextNumberPlusTwo).to.equal(4);
+                expect(nextNumberPlusTwo, 'to equal', 4);
                 memoizedGetNextNumberPlusOtherNumber(1, function (err, nextNumberPlusOneAgain) {
-                    expect(nextNumberPlusOne).to.equal(2);
+                    expect(nextNumberPlusOne, 'to equal', 2);
                     // This will purge memoizedGetNextNumberPlusOtherNumber(2, ...):
                     memoizedGetNextNumberPlusOtherNumber(3, function (err, nextNumberPlusThree) {
-                        expect(nextNumberPlusThree).to.equal(6);
+                        expect(nextNumberPlusThree, 'to equal', 6);
                         memoizedGetNextNumberPlusOtherNumber(2, function (err, nextNumberPlusTwoAgain) {
-                            expect(nextNumberPlusTwoAgain).to.equal(6);
+                            expect(nextNumberPlusTwoAgain, 'to equal', 6);
                             done();
                         });
                     });
@@ -209,13 +209,13 @@ describe('memoizeAsync', function () {
                 }
             });
         memoizedFunctionThatErrorsEverySecondTime(1, function (err, result) {
-            expect(err).to.not.be.ok();
-            expect(result).to.equal('the result');
-            expect(memoizedFunctionThatErrorsEverySecondTime.cache.length).to.equal(10);
+            expect(err, 'not to be ok');
+            expect(result, 'to equal', 'the result');
+            expect(memoizedFunctionThatErrorsEverySecondTime.cache.length, 'to equal', 10);
             memoizedFunctionThatErrorsEverySecondTime(2, function (err2, result2) {
-                expect(err2).to.be.an(Error);
-                expect(result2).to.equal(undefined);
-                expect(memoizedFunctionThatErrorsEverySecondTime.cache.length).to.equal(11);
+                expect(err2, 'to be an', Error);
+                expect(result2, 'to equal', undefined);
+                expect(memoizedFunctionThatErrorsEverySecondTime.cache.length, 'to equal', 11);
                 done();
             });
         });
@@ -229,13 +229,13 @@ describe('memoizeAsync', function () {
         });
         var cache = memoizedAsyncSum.cache;
         memoizedAsyncSum(1, 2, passError(done, function (sum) {
-            expect(sum).to.equal(3);
-            expect(cache.keys().length).to.equal(1);
+            expect(sum, 'to equal', 3);
+            expect(cache.keys().length, 'to equal', 1);
             cache.set('foo', 'bar');
-            expect(cache.keys().length).to.equal(2);
+            expect(cache.keys().length, 'to equal', 2);
             memoizedAsyncSum.purgeAll();
-            expect(cache.keys().length).to.equal(1);
-            expect(cache.get('foo')).to.equal('bar');
+            expect(cache.keys().length, 'to equal', 1);
+            expect(cache.get('foo'), 'to equal', 'bar');
             done();
         }));
     });
@@ -248,17 +248,17 @@ describe('memoizeAsync', function () {
         }
         var cache = new LRUCache(),
             memoizedAsyncSum1 = memoizeAsync(asyncSum, {cache: cache});
-        expect(memoizedAsyncSum1.cache).to.be(cache);
+        expect(memoizedAsyncSum1.cache, 'to be', cache);
 
         var memoizedAsyncSum2 = memoizeAsync(asyncSum, {cache: cache});
-        expect(memoizedAsyncSum2.cache).to.be(cache);
+        expect(memoizedAsyncSum2.cache, 'to be', cache);
         memoizedAsyncSum1(1, 2, passError(done, function (sum) {
-            expect(sum).to.equal(3);
-            expect(cache.keys().length).to.equal(1);
-            expect(cache.get(memoizedAsyncSum1.cacheKeyPrefix + memoizedAsyncSum1.argumentsStringifier([1, 2]))).to.eql([null, 3]);
+            expect(sum, 'to equal', 3);
+            expect(cache.keys().length, 'to equal', 1);
+            expect(cache.get(memoizedAsyncSum1.cacheKeyPrefix + memoizedAsyncSum1.argumentsStringifier([1, 2])), 'to equal', [null, 3]);
             memoizedAsyncSum2(1, 2, passError(done, function (sum) {
-                expect(sum).to.equal(3);
-                expect(cache.keys().length).to.equal(2);
+                expect(sum, 'to equal', 3);
+                expect(cache.keys().length, 'to equal', 2);
                 done();
             }));
         }));

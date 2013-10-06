@@ -11,8 +11,8 @@
     "passerror": "=0.0.2"
   },
   "devDependencies": {
-    "mocha": "=1.7.3",
-    "expect.js": "=0.2.0"
+    "mocha": "=1.13.0",
+    "unexpected": "=1.0.1"
   },
   "scripts": {
     "prepublish": "mocha",
