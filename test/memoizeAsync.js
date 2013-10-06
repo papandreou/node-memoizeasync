@@ -1,5 +1,7 @@
 var memoizeAsync = require('../lib/memoizeAsync'),
-    expect = require('expect.js');
+    LRUCache = require('lru-cache'),
+    expect = require('expect.js'),
+    passError = require('passerror');
 
 describe('memoizeAsync', function () {
     it('on a zero-param function should keep returning the same result', function (done) {
@@ -226,7 +228,8 @@ describe('memoizeAsync', function () {
             });
         });
         var cache = memoizedAsyncSum.cache;
-        memoizedAsyncSum(1, 2, function () {
+        memoizedAsyncSum(1, 2, passError(done, function (sum) {
+            expect(sum).to.equal(3);
             expect(cache.keys().length).to.equal(1);
             cache.set('foo', 'bar');
             expect(cache.keys().length).to.equal(2);
@@ -234,6 +237,30 @@ describe('memoizeAsync', function () {
             expect(cache.keys().length).to.equal(1);
             expect(cache.get('foo')).to.equal('bar');
             done();
-        });
+        }));
+    });
+
+    it('should allow passing an existing lru-cache instance in the options object', function (done) {
+        function asyncSum(a, b, cb) {
+            process.nextTick(function () {
+                cb(null, a + b);
+            });
+        }
+        var cache = new LRUCache(),
+            memoizedAsyncSum1 = memoizeAsync(asyncSum, {cache: cache});
+        expect(memoizedAsyncSum1.cache).to.be(cache);
+
+        var memoizedAsyncSum2 = memoizeAsync(asyncSum, {cache: cache});
+        expect(memoizedAsyncSum2.cache).to.be(cache);
+        memoizedAsyncSum1(1, 2, passError(done, function (sum) {
+            expect(sum).to.equal(3);
+            expect(cache.keys().length).to.equal(1);
+            expect(cache.get(memoizedAsyncSum1.cacheKeyPrefix + memoizedAsyncSum1.argumentsStringifier([1, 2]))).to.eql([null, 3]);
+            memoizedAsyncSum2(1, 2, passError(done, function (sum) {
+                expect(sum).to.equal(3);
+                expect(cache.keys().length).to.equal(2);
+                done();
+            }));
+        }));
     });
 });
