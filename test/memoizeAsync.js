@@ -281,4 +281,17 @@ describe('memoizeAsync', function () {
             done();
         }));
     });
+
+    it('should call the memoized function in options.context if specified', function (done) {
+        var memoizedFunction = memoizeAsync(function (a, cb) {
+            var sum = this.foo + a;
+            process.nextTick(function () {
+                cb(null, sum);
+            });
+        }, {context: {foo: 4}});
+        memoizedFunction(8, passError(done, function (sum) {
+            expect(sum, 'to equal', 12);
+            done();
+        }));
+    });
 });
