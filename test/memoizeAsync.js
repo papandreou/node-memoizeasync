@@ -263,4 +263,22 @@ describe('memoizeAsync', function () {
             }));
         }));
     });
+
+    it('should allow specifying a custom cacheKeyPrefix', function (done) {
+        var memoizedAsyncSum = memoizeAsync(function (a, b, cb) {
+            process.nextTick(function () {
+                cb(null, a + b);
+            });
+        }, {
+            cacheKeyPrefix: 999
+        });
+
+        expect(memoizedAsyncSum.cacheKeyPrefix, 'to equal', '999');
+
+        memoizedAsyncSum(1, 2, passError(done, function (sum) {
+            expect(sum, 'to equal', 3);
+            expect(memoizedAsyncSum.cache.get('999' + memoizedAsyncSum.argumentsStringifier([1, 2])), 'to equal', [null, 3]);
+            done();
+        }));
+    });
 });
