@@ -52,7 +52,7 @@ To distinguish different invocations (whose results need to be cached
 separately) `memoizeAsync` relies on a naive stringification of the
 arguments, which is looked up in an internally kept hash. If the
 function you're memoizing takes non-primitive arguments you might want
-to provide a custom `argumentsStringifier` as a option in the second
+to provide a custom `argumentsStringifier` as an option in the second
 argument to `memoizeAsync`. Otherwise all object arguments will be
 considered equal because they stringify to `[object Object]`:
 
