@@ -146,6 +146,15 @@ memoized.cache.values().forEach(function (resultCallbackParams) {
 });
 ```
 
+Error handling
+--------------
+
+If a memoized function passes an error to its callback, memoizeAsync will catch
+and rethrow it, so memoizeAsync is transparent in that regard. By default,
+errors won't be saved in the cache, so the original function will be run
+again on the next invocation of the memoized function. If you want errors
+to be memoized as well, set the `errors` option to `true`.
+
 Installation
 ------------
 

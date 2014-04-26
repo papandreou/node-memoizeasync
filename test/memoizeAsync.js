@@ -206,14 +206,15 @@ describe('memoizeAsync', function () {
             memoizedFunctionThatErrorsEverySecondTime = memoizeAsync(functionThatErrorsEverySecondTime, {
                 length: function (err, result) {
                     return err ? 1 : result.length;
-                }
+                },
+                errors: true
             });
         memoizedFunctionThatErrorsEverySecondTime(1, passError(done, function (result) {
             expect(result, 'to equal', 'the result');
             expect(memoizedFunctionThatErrorsEverySecondTime.cache.length, 'to equal', 10);
             memoizedFunctionThatErrorsEverySecondTime(2, function (err, result2) {
                 expect(err, 'to be an', Error);
-                expect(result2, 'to equal', undefined);
+                expect(result2, 'to be undefined');
                 expect(memoizedFunctionThatErrorsEverySecondTime.cache.length, 'to equal', 11);
                 done();
             });
@@ -292,5 +293,41 @@ describe('memoizeAsync', function () {
             expect(sum, 'to equal', 12);
             done();
         }));
+    });
+
+    it('should not memoize errors per default', function (done) {
+        var memoizedFunction = memoizeAsync(function (cb) {
+            process.nextTick(function () {
+                cb(new Error('foo'));
+            });
+        });
+        memoizedFunction(function (err) {
+            expect(err, 'to be an', Error);
+            expect(err.message, 'to equal', 'foo');
+            memoizedFunction(function (err2) {
+                expect(err2, 'to be an', Error);
+                expect(err2.message, 'to equal', 'foo');
+                expect(err2, 'not to be', err);
+                done();
+            });
+        });
+    });
+
+    it('should memoize errors if the `errors` option is set to true', function (done) {
+        var memoizedFunction = memoizeAsync(function (cb) {
+            process.nextTick(function () {
+                cb(new Error('foo'));
+            });
+        }, {errors: true});
+        memoizedFunction(function (err) {
+            expect(err, 'to be an', Error);
+            expect(err.message, 'to equal', 'foo');
+            memoizedFunction(function (err2) {
+                expect(err2, 'to be an', Error);
+                expect(err2.message, 'to equal', 'foo');
+                expect(err2, 'to be', err);
+                done();
+            });
+        });
     });
 });
