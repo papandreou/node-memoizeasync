@@ -146,6 +146,19 @@ memoized.cache.values().forEach(function (resultCallbackParams) {
 });
 ```
 
+Besides the maxAge option that is provided by the LRU module, the
+memoizer is augmented with a refreshAge option. When the memoizer
+is asked for a value which is post its refreshAge, it will start
+fetching a new value, while in the meantime it will return the
+value.
+
+```javascript
+var memoizedFsReadFile = memoizeAsync(slowAsyncMethod, {
+        refreshAge: 900,
+        maxAge: 1000
+    });
+```
+
 Error handling
 --------------
 
