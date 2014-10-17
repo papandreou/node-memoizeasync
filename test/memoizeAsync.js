@@ -1,3 +1,4 @@
+/*global describe, it, beforeEach, afterEach*/
 var memoizeAsync = require('../lib/memoizeAsync'),
     LRUCache = require('lru-cache'),
     expect = require('unexpected').clone().installPlugin(require('unexpected-sinon')),
@@ -110,7 +111,7 @@ describe('memoizeAsync', function () {
 
     it('should work with a custom argumentsStringifier', function (done) {
         function toCanonicalJson(obj) {
-            return JSON.stringify(function traverseAndSortKeys(obj) {
+            return JSON.stringify((function traverseAndSortKeys(obj) {
                 if (Array.isArray(obj)) {
                     return obj.map(traverseAndSortKeys);
                 } else if (typeof obj === 'object' && obj !== null) {
@@ -122,7 +123,7 @@ describe('memoizeAsync', function () {
                 } else {
                     return obj;
                 }
-            }(obj));
+            }(obj)));
         }
 
         var nextNumber = 1,
