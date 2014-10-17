@@ -4,9 +4,9 @@ node-memoizeasync
 Yet another memoizer for asynchronous functions.
 
 [![NPM version](https://badge.fury.io/js/memoizeasync.png)](http://badge.fury.io/js/memoizeasync)
-[![Build Status](https://travis-ci.org/papandreou/memoizeasync.svg?branch=master)](https://travis-ci.org/papandreou/memoizeasync)
-[![Coverage Status](https://coveralls.io/repos/papandreou/memoizeasync/badge.png)](https://coveralls.io/r/papandreou/memoizeasync)
-[![Dependency Status](https://david-dm.org/papandreou/memoizeasync.png)](https://david-dm.org/papandreou/memoizeasync)
+[![Build Status](https://travis-ci.org/papandreou/node-memoizeasync.svg?branch=master)](https://travis-ci.org/papandreou/node-memoizeasync)
+[![Coverage Status](https://coveralls.io/repos/papandreou/node-memoizeasync/badge.png)](https://coveralls.io/r/papandreou/node-memoizeasync)
+[![Dependency Status](https://david-dm.org/papandreou/node-memoizeasync.png)](https://david-dm.org/papandreou/node-memoizeasync)
 
 ```javascript
 var memoizeAsync = require('memoizeasync');
