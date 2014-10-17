@@ -7,58 +7,62 @@ var memoizeAsync = require('../lib/memoizeAsync'),
     sinon = require('sinon');
 
 describe('memoizeAsync', function () {
-    it('on a zero-param function should keep returning the same result', function (done) {
-        var nextNumber = 1,
-            memoizedGetNextNumber = memoizeAsync(function getNextNumber(cb) {
-                process.nextTick(function () {
-                    cb(null, nextNumber);
-                    nextNumber += 1;
+    describe('on a zero-param function', function () {
+        it('should keep returning the same result', function (done) {
+            var nextNumber = 1,
+                memoizedGetNextNumber = memoizeAsync(function getNextNumber(cb) {
+                    process.nextTick(function () {
+                        cb(null, nextNumber);
+                        nextNumber += 1;
+                    });
                 });
-            });
 
-        memoizedGetNextNumber(function (err, nextNumber) {
-            expect(nextNumber, 'to equal', 1);
-            memoizedGetNextNumber(function (err, nextNextNumber) {
-                expect(nextNextNumber, 'to equal', 1);
-                done();
+            memoizedGetNextNumber(function (err, nextNumber) {
+                expect(nextNumber, 'to equal', 1);
+                memoizedGetNextNumber(function (err, nextNextNumber) {
+                    expect(nextNextNumber, 'to equal', 1);
+                    done();
+                });
             });
         });
     });
 
-    it('on a multi-param function should only return the same result when the parameters are the same', function (done) {
-        var nextNumber = 1,
-            memoizedSumOfOperandsPlusNextNumber = memoizeAsync(function sumOfOperandsPlusNextNumber(op1, op2, cb) {
-                process.nextTick(function () {
-                    cb(null, op1 + op2 + nextNumber);
-                    nextNumber += 1;
+    describe('on a multi-param function', function () {
+        it('should only return the same result when the parameters are the same', function (done) {
+            var nextNumber = 1,
+                memoizedSumOfOperandsPlusNextNumber = memoizeAsync(function sumOfOperandsPlusNextNumber(op1, op2, cb) {
+                    process.nextTick(function () {
+                        cb(null, op1 + op2 + nextNumber);
+                        nextNumber += 1;
+                    });
                 });
-            });
 
-        memoizedSumOfOperandsPlusNextNumber(10, 10, passError(done, function (sumPlusNextNumber) {
-            expect(sumPlusNextNumber, 'to equal', 21);
-            expect(memoizedSumOfOperandsPlusNextNumber.peek(10, 10)[1], 'to equal', 21);
-            memoizedSumOfOperandsPlusNextNumber(10, 10, passError(done, function (sumPlusNextNextNumber) {
-                expect(sumPlusNextNextNumber, 'to equal', 21);
-                memoizedSumOfOperandsPlusNextNumber(10, 20, passError(done, function (sumPlusNextNextNextNumber) {
-                    expect(sumPlusNextNextNextNumber, 'to equal', 32);
-                    memoizedSumOfOperandsPlusNextNumber.purge(10, 20);
-                    memoizedSumOfOperandsPlusNextNumber(10, 20, passError(done, function (number) {
-                        expect(number, 'to equal', 33);
-                        memoizedSumOfOperandsPlusNextNumber(10, 10, passError(done, function (number) {
-                            expect(number, 'to equal', 21);
-                            memoizedSumOfOperandsPlusNextNumber.purgeAll();
-                            memoizedSumOfOperandsPlusNextNumber(10, 20, passError(done, function (number) {
-                                expect(number, 'to equal', 34);
-                                memoizedSumOfOperandsPlusNextNumber(10, 10, passError(done, function (number) {
-                                    expect(number, 'to equal', 25);
-                                    done();
+            memoizedSumOfOperandsPlusNextNumber(10, 10, passError(done, function (sumPlusNextNumber) {
+                expect(sumPlusNextNumber, 'to equal', 21);
+                expect(memoizedSumOfOperandsPlusNextNumber.peek(10, 10)[1], 'to equal', 21);
+                memoizedSumOfOperandsPlusNextNumber(10, 10, passError(done, function (sumPlusNextNextNumber) {
+                    expect(sumPlusNextNextNumber, 'to equal', 21);
+                    memoizedSumOfOperandsPlusNextNumber(10, 20, passError(done, function (sumPlusNextNextNextNumber) {
+                        expect(sumPlusNextNextNextNumber, 'to equal', 32);
+                        memoizedSumOfOperandsPlusNextNumber.purge(10, 20);
+                        memoizedSumOfOperandsPlusNextNumber(10, 20, passError(done, function (number) {
+                            expect(number, 'to equal', 33);
+                            memoizedSumOfOperandsPlusNextNumber(10, 10, passError(done, function (number) {
+                                expect(number, 'to equal', 21);
+                                memoizedSumOfOperandsPlusNextNumber.purgeAll();
+                                memoizedSumOfOperandsPlusNextNumber(10, 20, passError(done, function (number) {
+                                    expect(number, 'to equal', 34);
+                                    memoizedSumOfOperandsPlusNextNumber(10, 10, passError(done, function (number) {
+                                        expect(number, 'to equal', 25);
+                                        done();
+                                    }));
                                 }));
                             }));
                         }));
                     }));
                 }));
             }));
-        }));
+        });
     });
 
     it('should produce a function that works as a method', function (done) {
@@ -150,85 +154,91 @@ describe('memoizeAsync', function () {
         }));
     });
 
-    it('with a maxAge should recompute the value after an item has become stale', function (done) {
-        var nextNumber = 1,
-            memoizedGetNextNumber = memoizeAsync(function getNextNumber(cb) {
-                process.nextTick(function () {
-                    cb(null, nextNumber);
-                    nextNumber += 1;
-                });
-            }, {maxAge: 10});
+    describe('with a maxAge', function () {
+        it('should recompute the value after an item has become stale', function (done) {
+            var nextNumber = 1,
+                memoizedGetNextNumber = memoizeAsync(function getNextNumber(cb) {
+                    process.nextTick(function () {
+                        cb(null, nextNumber);
+                        nextNumber += 1;
+                    });
+                }, {maxAge: 10});
 
-        memoizedGetNextNumber(passError(done, function (nextNumber) {
-            expect(nextNumber, 'to equal', 1);
             memoizedGetNextNumber(passError(done, function (nextNumber) {
                 expect(nextNumber, 'to equal', 1);
-                setTimeout(function () {
-                    memoizedGetNextNumber(passError(done, function (nextNumber) {
-                        expect(nextNumber, 'to equal', 2);
-                        done();
-                    }));
-                }, 15);
+                memoizedGetNextNumber(passError(done, function (nextNumber) {
+                    expect(nextNumber, 'to equal', 1);
+                    setTimeout(function () {
+                        memoizedGetNextNumber(passError(done, function (nextNumber) {
+                            expect(nextNumber, 'to equal', 2);
+                            done();
+                        }));
+                    }, 15);
+                }));
             }));
-        }));
+        });
     });
 
-    it('with a max limit should purge the least recently used result', function (done) {
-        var nextNumber = 1,
-            memoizedGetNextNumberPlusOtherNumber = memoizeAsync(function getNextNumber(otherNumber, cb) {
-                process.nextTick(function () {
-                    cb(null, otherNumber + nextNumber);
-                    nextNumber += 1;
-                });
-            }, {max: 2});
+    describe('with a max limit', function () {
+        it('with a max limit should purge the least recently used result', function (done) {
+            var nextNumber = 1,
+                memoizedGetNextNumberPlusOtherNumber = memoizeAsync(function getNextNumber(otherNumber, cb) {
+                    process.nextTick(function () {
+                        cb(null, otherNumber + nextNumber);
+                        nextNumber += 1;
+                    });
+                }, {max: 2});
 
-        memoizedGetNextNumberPlusOtherNumber(1, passError(done, function (nextNumberPlusOne) {
-            expect(nextNumberPlusOne, 'to equal', 2);
-            memoizedGetNextNumberPlusOtherNumber(2, passError(done, function (nextNumberPlusTwo) {
-                expect(nextNumberPlusTwo, 'to equal', 4);
-                memoizedGetNextNumberPlusOtherNumber(1, passError(done, function (nextNumberPlusOneAgain) {
-                    expect(nextNumberPlusOne, 'to equal', 2);
-                    // This will purge memoizedGetNextNumberPlusOtherNumber(2, ...):
-                    memoizedGetNextNumberPlusOtherNumber(3, passError(done, function (nextNumberPlusThree) {
-                        expect(nextNumberPlusThree, 'to equal', 6);
-                        memoizedGetNextNumberPlusOtherNumber(2, passError(done, function (nextNumberPlusTwoAgain) {
-                            expect(nextNumberPlusTwoAgain, 'to equal', 6);
-                            done();
+            memoizedGetNextNumberPlusOtherNumber(1, passError(done, function (nextNumberPlusOne) {
+                expect(nextNumberPlusOne, 'to equal', 2);
+                memoizedGetNextNumberPlusOtherNumber(2, passError(done, function (nextNumberPlusTwo) {
+                    expect(nextNumberPlusTwo, 'to equal', 4);
+                    memoizedGetNextNumberPlusOtherNumber(1, passError(done, function (nextNumberPlusOneAgain) {
+                        expect(nextNumberPlusOne, 'to equal', 2);
+                        // This will purge memoizedGetNextNumberPlusOtherNumber(2, ...):
+                        memoizedGetNextNumberPlusOtherNumber(3, passError(done, function (nextNumberPlusThree) {
+                            expect(nextNumberPlusThree, 'to equal', 6);
+                            memoizedGetNextNumberPlusOtherNumber(2, passError(done, function (nextNumberPlusTwoAgain) {
+                                expect(nextNumberPlusTwoAgain, 'to equal', 6);
+                                done();
+                            }));
                         }));
                     }));
                 }));
             }));
-        }));
+        });
     });
 
-    it('with a length function should call the length function with the result callback parameters as regular arguments', function (done) {
-        var shouldErrorNextTime = false,
-            functionThatErrorsEverySecondTime = function (number, cb) {
-                process.nextTick(function () {
-                    if (shouldErrorNextTime) {
-                        cb(new Error());
-                    } else {
-                        cb(null, 'the result');
-                    }
-                    shouldErrorNextTime = !shouldErrorNextTime;
-                });
-            },
-            memoizedFunctionThatErrorsEverySecondTime = memoizeAsync(functionThatErrorsEverySecondTime, {
-                length: function (err, result) {
-                    return err ? 1 : result.length;
+    describe('with a length function', function () {
+        it('should call the length function with the result callback parameters as regular arguments', function (done) {
+            var shouldErrorNextTime = false,
+                functionThatErrorsEverySecondTime = function (number, cb) {
+                    process.nextTick(function () {
+                        if (shouldErrorNextTime) {
+                            cb(new Error());
+                        } else {
+                            cb(null, 'the result');
+                        }
+                        shouldErrorNextTime = !shouldErrorNextTime;
+                    });
                 },
-                errors: true
-            });
-        memoizedFunctionThatErrorsEverySecondTime(1, passError(done, function (result) {
-            expect(result, 'to equal', 'the result');
-            expect(memoizedFunctionThatErrorsEverySecondTime.cache.length, 'to equal', 10);
-            memoizedFunctionThatErrorsEverySecondTime(2, function (err, result2) {
-                expect(err, 'to be an', Error);
-                expect(result2, 'to be undefined');
-                expect(memoizedFunctionThatErrorsEverySecondTime.cache.length, 'to equal', 11);
-                done();
-            });
-        }));
+                memoizedFunctionThatErrorsEverySecondTime = memoizeAsync(functionThatErrorsEverySecondTime, {
+                    length: function (err, result) {
+                        return err ? 1 : result.length;
+                    },
+                    errors: true
+                });
+            memoizedFunctionThatErrorsEverySecondTime(1, passError(done, function (result) {
+                expect(result, 'to equal', 'the result');
+                expect(memoizedFunctionThatErrorsEverySecondTime.cache.length, 'to equal', 10);
+                memoizedFunctionThatErrorsEverySecondTime(2, function (err, result2) {
+                    expect(err, 'to be an', Error);
+                    expect(result2, 'to be undefined');
+                    expect(memoizedFunctionThatErrorsEverySecondTime.cache.length, 'to equal', 11);
+                    done();
+                });
+            }));
+        });
     });
 
     it('should leave unrelated values in the cache when purgeAll is called', function (done) {
@@ -341,7 +351,7 @@ describe('memoizeAsync', function () {
         });
     });
 
-    describe('refreshTime', function () {
+    describe('with refreshTime', function () {
         var clock;
         var currentTick = 0;
 
