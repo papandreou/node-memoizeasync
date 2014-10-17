@@ -10,7 +10,8 @@ describe('memoizeAsync', function () {
         var nextNumber = 1,
             memoizedGetNextNumber = memoizeAsync(function getNextNumber(cb) {
                 process.nextTick(function () {
-                    cb(null, nextNumber++);
+                    cb(null, nextNumber);
+                    nextNumber += 1;
                 });
             });
 
@@ -27,7 +28,8 @@ describe('memoizeAsync', function () {
         var nextNumber = 1,
             memoizedSumOfOperandsPlusNextNumber = memoizeAsync(function sumOfOperandsPlusNextNumber(op1, op2, cb) {
                 process.nextTick(function () {
-                    cb(null, op1 + op2 + nextNumber++);
+                    cb(null, op1 + op2 + nextNumber);
+                    nextNumber += 1;
                 });
             });
 
@@ -66,7 +68,8 @@ describe('memoizeAsync', function () {
         Counter.prototype.getNextNumber = memoizeAsync(function (cb) {
             var that = this;
             process.nextTick(function () {
-                cb(null, that.nextNumber++);
+                cb(null, that.nextNumber);
+                that.nextNumber += 1;
             });
         });
 
@@ -87,7 +90,8 @@ describe('memoizeAsync', function () {
         var nextNumber = 1,
             memoizedGetNextNumber = memoizeAsync(function getNextNumber(cb) {
                 process.nextTick(function () {
-                    cb(null, nextNumber++);
+                    cb(null, nextNumber);
+                    nextNumber += 1;
                 });
             });
 
@@ -124,7 +128,8 @@ describe('memoizeAsync', function () {
         var nextNumber = 1,
             memoizedGetNextNumber = memoizeAsync(function getNextNumber(obj, cb) {
                 process.nextTick(function () {
-                    cb(null, nextNumber++);
+                    cb(null, nextNumber);
+                    nextNumber += 1;
                 });
             }, {
                 argumentsStringifier: function (args) {
@@ -148,7 +153,8 @@ describe('memoizeAsync', function () {
         var nextNumber = 1,
             memoizedGetNextNumber = memoizeAsync(function getNextNumber(cb) {
                 process.nextTick(function () {
-                    cb(null, nextNumber++);
+                    cb(null, nextNumber);
+                    nextNumber += 1;
                 });
             }, {maxAge: 10});
 
@@ -170,7 +176,8 @@ describe('memoizeAsync', function () {
         var nextNumber = 1,
             memoizedGetNextNumberPlusOtherNumber = memoizeAsync(function getNextNumber(otherNumber, cb) {
                 process.nextTick(function () {
-                    cb(null, otherNumber + (nextNumber++));
+                    cb(null, otherNumber + nextNumber);
+                    nextNumber += 1;
                 });
             }, {max: 2});
 
