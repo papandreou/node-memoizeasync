@@ -1,7 +1,9 @@
 var memoizeAsync = require('../lib/memoizeAsync'),
     LRUCache = require('lru-cache'),
-    expect = require('unexpected'),
-    passError = require('passerror');
+    expect = require('unexpected').clone().installPlugin(require('unexpected-sinon')),
+    passError = require('passerror'),
+    async = require('async'),
+    sinon = require('sinon');
 
 describe('memoizeAsync', function () {
     it('on a zero-param function should keep returning the same result', function (done) {
@@ -328,6 +330,75 @@ describe('memoizeAsync', function () {
                 expect(err2, 'to be', err);
                 done();
             });
+        });
+    });
+
+    describe('refreshTime', function () {
+        var clock;
+        var currentTick = 0;
+
+        function gotoTick(n) {
+            var toTick = n - currentTick;
+            currentTick = n;
+            clock.tick(toTick);
+        }
+
+        beforeEach(function () {
+            currentTick = 0;
+            clock = sinon.useFakeTimers();
+        });
+        afterEach(function () {
+            clock.restore();
+        });
+        it('should refresh async but return stale value immediately', function (done) {
+            var nextNumber = 1,
+                method = sinon.spy(function getNextNumber(cb) {
+                    setTimeout(function () {
+                        cb(null, nextNumber);
+                        nextNumber += 1;
+                    }, 5);
+                }),
+                memoizedGetNextNumber = memoizeAsync(method, { maxAge: 20, refreshAge: 10 });
+
+            async.series([
+                function (callback) {
+                    // initial call
+                    memoizedGetNextNumber(passError(callback, function (nextNumber) {
+                        expect(nextNumber, 'to be', 1);
+                        expect(method, 'was called once');
+                        gotoTick(10);
+                        callback();
+                    }));
+                    // going to tick 6 to allow it to finish
+                    gotoTick(6);
+                },
+                function (callback) {
+                    // still below refreshAge
+                    memoizedGetNextNumber(passError(callback, function (nextNumber) {
+                        expect(nextNumber, 'to be', 1);
+                        expect(method, 'was called once');
+                        gotoTick(17);
+                        callback();
+                    }));
+                },
+                function (callback) {
+                    // above refreshAge below maxAge immediate result
+                    memoizedGetNextNumber(passError(callback, function (nextNumber) {
+                        expect(nextNumber, 'to be', 1);
+                        expect(method, 'was called twice');
+                        gotoTick(27);
+                        callback();
+                    }));
+                },
+                function (callback) {
+                    // above initial maxAge but immediate result because refresh
+                    memoizedGetNextNumber(passError(callback, function (nextNumber) {
+                        expect(nextNumber, 'to be', 2);
+                        expect(method, 'was called twice');
+                        callback();
+                    }));
+                }
+            ], done);
         });
     });
 });
