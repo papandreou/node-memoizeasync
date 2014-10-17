@@ -419,4 +419,69 @@ describe('memoizeAsync', function () {
             ], done);
         });
     });
+
+    describe('#getTtl', function () {
+        it('should return -1 for a non-existent value', function () {
+            expect(memoizeAsync(setImmediate).getTtl(), 'to equal', -1);
+        });
+
+        it('should return undefined when there is no maxAge', function (done) {
+            var memoizedAsyncSum = memoizeAsync(function (a, b, cb) {
+                process.nextTick(function () {
+                    cb(null, a + b);
+                });
+            });
+
+            memoizedAsyncSum(1, 2, function () {
+                expect(memoizedAsyncSum.getTtl(1, 2), 'to be undefined');
+                done();
+            });
+        });
+
+        it('should return the ttl in milliseconds when a maxAge is defined', function (done) {
+            var memoizedAsyncSum = memoizeAsync(function (a, b, cb) {
+                process.nextTick(function () {
+                    cb(null, a + b);
+                });
+            }, {
+                maxAge: 1000
+            });
+            memoizedAsyncSum(1, 2, function () {
+                expect(memoizedAsyncSum.getTtl(1, 2), 'to be a number');
+                done();
+            });
+        });
+    });
+
+    describe('#getAge', function () {
+        it('should return -1 for a non-existent value', function () {
+            expect(memoizeAsync(setImmediate).getAge(), 'to equal', -1);
+        });
+
+        it('should return undefined when there is no maxAge', function (done) {
+            var memoizedAsyncSum = memoizeAsync(function (a, b, cb) {
+                process.nextTick(function () {
+                    cb(null, a + b);
+                });
+            });
+            memoizedAsyncSum(1, 2, function () {
+                expect(memoizedAsyncSum.getAge(1, 2), 'to be undefined');
+                done();
+            });
+        });
+
+        it('should return the age in milliseconds when a maxAge is defined', function (done) {
+            var memoizedAsyncSum = memoizeAsync(function (a, b, cb) {
+                process.nextTick(function () {
+                    cb(null, a + b);
+                });
+            }, {
+                maxAge: 1000
+            });
+            memoizedAsyncSum(1, 2, function () {
+                expect(memoizedAsyncSum.getAge(1, 2), 'to be a number');
+                done();
+            });
+        });
+    });
 });
