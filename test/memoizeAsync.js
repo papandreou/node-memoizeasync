@@ -351,7 +351,7 @@ describe('memoizeAsync', function () {
         });
     });
 
-    describe('with refreshTime', function () {
+    describe('with refreshAge', function () {
         var clock;
         var currentTick = 0;
 
@@ -412,6 +412,51 @@ describe('memoizeAsync', function () {
                     // above initial maxAge but immediate result because refresh
                     memoizedGetNextNumber(passError(callback, function (nextNumber) {
                         expect(nextNumber, 'to be', 2);
+                        expect(method, 'was called twice');
+                        callback();
+                    }));
+                }
+            ], done);
+        });
+        it('should allow updating refreshTime on the fly', function (done) {
+            // Reusing the test from above to assert that you can change the refreshAge on the fly.
+            var nextNumber = 1,
+                method = sinon.spy(function getNextNumber(cb) {
+                    setTimeout(function () {
+                        cb(null, nextNumber);
+                        nextNumber += 1;
+                    }, 5);
+                }),
+                memoizedGetNextNumber = memoizeAsync(function (callback) {
+                    method(callback);
+                    memoizedGetNextNumber.refreshAge = 10;
+                }, { maxAge: 20, refreshAge: 100 });
+
+            async.series([
+                function (callback) {
+                    // initial call
+                    memoizedGetNextNumber(passError(callback, function (nextNumber) {
+                        expect(nextNumber, 'to be', 1);
+                        expect(method, 'was called once');
+                        gotoTick(10);
+                        callback();
+                    }));
+                    // going to tick 6 to allow it to finish
+                    gotoTick(6);
+                },
+                function (callback) {
+                    // still below refreshAge
+                    memoizedGetNextNumber(passError(callback, function (nextNumber) {
+                        expect(nextNumber, 'to be', 1);
+                        expect(method, 'was called once');
+                        gotoTick(17);
+                        callback();
+                    }));
+                },
+                function (callback) {
+                    // above refreshAge below maxAge immediate result
+                    memoizedGetNextNumber(passError(callback, function (nextNumber) {
+                        expect(nextNumber, 'to be', 1);
                         expect(method, 'was called twice');
                         callback();
                     }));
