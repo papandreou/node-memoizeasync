@@ -1,0 +1,35 @@
+{
+  "name": "memoizeasync",
+  "version": "0.8.0",
+  "description": "Helper for memoizing async functions and methods",
+  "main": "lib/memoizeAsync.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "lru-cache": "2.5.0",
+    "passerror": "0.0.2"
+  },
+  "devDependencies": {
+    "async": "0.9.0",
+    "coveralls": "2.11.2",
+    "istanbul": "0.3.2",
+    "jshint": "2.5.6",
+    "mocha": "1.21.5",
+    "sinon": "1.10.3",
+    "unexpected": "5.0.0-beta9",
+    "unexpected-sinon": "3.0.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/papandreou/node-memoizeasync.git"
+  },
+  "keywords": [
+    "memo",
+    "memoize",
+    "async",
+    "cache"
+  ],
+  "author": "Andreas Lind Petersen <andreas@one.com>",
+  "license": "BSD"
+}
