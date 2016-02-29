@@ -418,6 +418,7 @@ describe('memoizeAsync', function () {
                 }
             ], done);
         });
+
         it('should allow updating refreshTime on the fly', function (done) {
             // Reusing the test from above to assert that you can change the refreshAge on the fly.
             var nextNumber = 1,
@@ -528,5 +529,39 @@ describe('memoizeAsync', function () {
                 done();
             });
         });
+    });
+
+    it('should keep serving the stale value after starting a refresh and not call the underlying method again', function () {
+        var nextNumber = 1,
+            method = sinon.spy(function getNextNumber(cb) {
+                setTimeout(function () {
+                    cb(null, nextNumber);
+                    nextNumber += 1;
+                }, 5);
+            }),
+            memoizedGetNextNumber = memoizeAsync(function (callback) {
+                method(callback);
+            }, { maxAge: 100, refreshAge: 50 });
+
+        return expect(memoizedGetNextNumber, 'to call the callback without error')
+            .spread(function (result) {
+                expect(result, 'to equal', 1);
+                expect(method, 'was called once');
+            })
+            .delay(55)
+            .then(function () {
+                return expect.promise.all([
+                    expect(memoizedGetNextNumber, 'to call the callback without error'),
+                    expect(memoizedGetNextNumber, 'to call the callback without error')
+                ]);
+            })
+            .then(function (result) {
+                expect(result, 'to equal', [ [ 1 ], [ 1 ] ]);
+                expect(method, 'was called twice');
+            })
+            .delay(10)
+            .then(function () {
+                expect(memoizedGetNextNumber.peek(), 'to equal', [ null, 2 ]);
+            });
     });
 });
