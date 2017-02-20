@@ -18,8 +18,10 @@ describe('memoizeAsync', function () {
                 });
 
             memoizedGetNextNumber(function (err, nextNumber) {
+                expect(err, 'to be falsy');
                 expect(nextNumber, 'to equal', 1);
                 memoizedGetNextNumber(function (err, nextNextNumber) {
+                    expect(err, 'to be falsy');
                     expect(nextNextNumber, 'to equal', 1);
                     done();
                 });
@@ -102,6 +104,7 @@ describe('memoizeAsync', function () {
 
         var results = [];
         function receiveResultAndProceedIfReady(err, number) {
+            expect(err, 'to be falsy');
             results.push(number);
             if (results.length === 2) {
                 expect(results[0], 'to equal', 1);
