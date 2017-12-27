@@ -116,45 +116,71 @@ describe('memoizeAsync', function () {
         memoizedGetNextNumber(receiveResultAndProceedIfReady);
     });
 
-    it('should work with a custom argumentsStringifier', function (done) {
-        function toCanonicalJson(obj) {
-            return JSON.stringify((function traverseAndSortKeys(obj) {
-                if (Array.isArray(obj)) {
-                    return obj.map(traverseAndSortKeys);
-                } else if (typeof obj === 'object' && obj !== null) {
-                    var resultObj = {};
-                    Object.keys(obj).sort().forEach(function (key) {
-                        resultObj[key] = traverseAndSortKeys(obj[key]);
+    describe('with a custom argumentsStringifier', function () {
+        it('should use it instead of String(...)', function (done) {
+            function toCanonicalJson(obj) {
+                return JSON.stringify((function traverseAndSortKeys(obj) {
+                    if (Array.isArray(obj)) {
+                        return obj.map(traverseAndSortKeys);
+                    } else if (typeof obj === 'object' && obj !== null) {
+                        var resultObj = {};
+                        Object.keys(obj).sort().forEach(function (key) {
+                            resultObj[key] = traverseAndSortKeys(obj[key]);
+                        });
+                        return resultObj;
+                    } else {
+                        return obj;
+                    }
+                }(obj)));
+            }
+
+            var nextNumber = 1,
+                memoizedGetNextNumber = memoizeAsync(function getNextNumber(obj, cb) {
+                    process.nextTick(function () {
+                        cb(null, nextNumber);
+                        nextNumber += 1;
                     });
-                    return resultObj;
-                } else {
-                    return obj;
-                }
-            }(obj)));
-        }
-
-        var nextNumber = 1,
-            memoizedGetNextNumber = memoizeAsync(function getNextNumber(obj, cb) {
-                process.nextTick(function () {
-                    cb(null, nextNumber);
-                    nextNumber += 1;
+                }, {
+                    argumentsStringifier: function (args) {
+                        return args.map(toCanonicalJson).join('\x1d');
+                    }
                 });
-            }, {
-                argumentsStringifier: function (args) {
-                    return args.map(toCanonicalJson).join('\x1d');
-                }
-            });
 
-        memoizedGetNextNumber({foo: 'bar', quux: 'baz'}, passError(done, function (nextNumber) {
-            expect(nextNumber, 'to equal', 1);
-            memoizedGetNextNumber({quux: 'baz', foo: 'bar'}, passError(done, function (nextNumber) {
+            memoizedGetNextNumber({foo: 'bar', quux: 'baz'}, passError(done, function (nextNumber) {
                 expect(nextNumber, 'to equal', 1);
-                memoizedGetNextNumber({barf: 'baz'}, passError(done, function (nextNumber) {
-                    expect(nextNumber, 'to equal', 2);
-                    done();
+                memoizedGetNextNumber({quux: 'baz', foo: 'bar'}, passError(done, function (nextNumber) {
+                    expect(nextNumber, 'to equal', 1);
+                    memoizedGetNextNumber({barf: 'baz'}, passError(done, function (nextNumber) {
+                        expect(nextNumber, 'to equal', 2);
+                        done();
+                    }));
                 }));
             }));
-        }));
+        });
+
+        describe('that returns false', function () {
+            it('should bypass the memoization', function (done) {
+                var nextNumber = 1,
+                    memoizedGetNextNumber = memoizeAsync(function getNextNumber(str, cb) {
+                        process.nextTick(function () {
+                            cb(null, nextNumber);
+                            nextNumber += 1;
+                        });
+                    }, {
+                        argumentsStringifier: function () {
+                            return false;
+                        }
+                    });
+
+                memoizedGetNextNumber('foo', passError(done, function (nextNumber) {
+                    expect(nextNumber, 'to equal', 1);
+                    memoizedGetNextNumber('foo', passError(done, function (nextNumber) {
+                        expect(nextNumber, 'to equal', 2);
+                        done();
+                    }));
+                }));
+            });
+        });
     });
 
     describe('with a maxAge', function () {
